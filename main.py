@@ -16,6 +16,12 @@ def main():
     parser.add_argument(
         "--dataset", type=str, help="Path to dataset txt file (optional)"
     )
+    parser.add_argument(
+        "--width", type=int, default=640, help="Input image width (default: 640)"
+    )
+    parser.add_argument(
+        "--height", type=int, default=640, help="Input image height (default: 640)"
+    )
     args = parser.parse_args()
 
     model_path = args.model
@@ -36,7 +42,7 @@ def main():
 
     print("Loading ONNX model")
     ret = rknn.load_onnx(
-        model=model_path, inputs=["image"], input_size_list=[[1, 3, 640, 640]]
+        model=model_path, inputs=["image"], input_size_list=[[1, 3, args.height, args.width]]
     )
     if ret != 0:
         print("Load model failed!")
