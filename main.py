@@ -22,18 +22,29 @@ def main():
     parser.add_argument(
         "--height", type=int, default=640, help="Input image height (default: 640)"
     )
+    parser.add_argument(
+        "--channels",
+        type=int,
+        default=3,
+        help="Input channel count (default: 3)",
+    )
     args = parser.parse_args()
 
     model_path = args.model
     platform = args.platform
     dataset = args.dataset
+    channels = args.channels
+    if channels <= 0:
+        raise ValueError("--channels must be a positive integer")
     print(f"Convert ONNX model to RKNN format: {model_path}")
 
     rknn = RKNN(verbose=True)
 
     print("Configuring model")
+    mean_values = [[0] * channels]
+    std_values = [[255] * channels]
     ret = rknn.config(
-        mean_values=[[0, 0, 0]], std_values=[[255, 255, 255]], target_platform=platform
+        mean_values=mean_values, std_values=std_values, target_platform=platform
     )
     if ret != 0:
         print("Config failed!")
@@ -42,7 +53,9 @@ def main():
 
     print("Loading ONNX model")
     ret = rknn.load_onnx(
-        model=model_path, inputs=["image"], input_size_list=[[1, 3, args.height, args.width]]
+        model=model_path,
+        inputs=["image"],
+        input_size_list=[[1, channels, args.height, args.width]],
     )
     if ret != 0:
         print("Load model failed!")
